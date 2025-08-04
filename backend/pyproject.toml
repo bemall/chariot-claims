@@ -1,0 +1,123 @@
+[project]
+name = "chariot-claims"
+version = "0.1.0"
+description = "Chariot Claims Management System"
+authors = [
+    {name = "Your Name", email = "you@example.com"}
+]
+readme = "README.md"
+requires-python = ">=3.11,<4"  # Changed from ">=3.11" to ">=3.11,<4"
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+dependencies = [
+    "django>=5.0.1",
+    "django-environ>=0.11.2",
+    "psycopg2-binary>=2.9.9",
+    "redis>=5.0.1",
+    "celery>=5.3.4",
+    "djangorestframework>=3.14.0",
+    "django-cors-headers>=4.3.1",
+    "django-extensions>=3.2.3",
+    "django-filter>=23.5",
+    "drf-spectacular>=0.27.0",
+    "pillow>=10.2.0",
+    "gunicorn>=21.2.0",
+    "whitenoise>=6.6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ipython>=8.19.0",
+    "pytest>=7.4.4",
+    "pytest-django>=4.7.0",
+    "pytest-cov>=4.1.0",
+    "factory-boy>=3.3.0",
+    "black>=23.12.1",
+    "flake8>=7.0.0",
+    "isort>=5.13.2",
+    "mypy>=1.8.0",
+    "django-stubs>=4.2.7",
+]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+# Poetry-specific settings that don't have PEP 621 equivalents go here
+# packages = [{include = "chariot_claims"}, {include = "apps"}]
+packages = [
+    { include = "chariot_claims" },
+    { include = "apps" }
+]
+
+[tool.poetry.group.dev]
+optional = true
+
+[tool.poetry.group.dev.dependencies]
+ipython = "^8.19.0"
+pytest = "^7.4.4"
+pytest-django = "^4.7.0"
+pytest-cov = "^4.1.0"
+factory-boy = "^3.3.0"
+black = "^23.12.1"
+flake8 = "^7.0.0"
+isort = "^5.13.2"
+mypy = "^1.8.0"
+django-stubs = "^4.2.7"
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  migrations
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+line_length = 88
+skip_glob = ["*/migrations/*"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "chariot_claims.settings"
+python_files = ["test_*.py", "*_test.py", "tests.py"]
+addopts = """
+    --verbose
+    --strict-markers
+    --cov=apps
+    --cov-report=html
+    --cov-report=term-missing:skip-covered
+"""
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+django_settings_module = "chariot_claims.settings"
+plugins = ["mypy_django_plugin.main"]
+
+[tool.coverage.run]
+source = ["apps"]
+omit = ["*/migrations/*", "*/tests/*", "*/test_*.py"]
+
+[tool.coverage.report]
+precision = 2
+show_missing = true
+skip_covered = true

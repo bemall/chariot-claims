@@ -1,0 +1,217 @@
+# Makefile for Django + React Monorepo (Poetry, Docker, Vite)
+# Supports multi-env, .env loading, Docker/Poetry checks, and developer automation
+
+# --- Settings ---
+ENV ?= development
+PYTHON=poetry run python
+MANAGE=cd backend && poetry run python manage.py
+FRONTEND_DIR=frontend
+BACKEND_DIR=backend
+DEPLOYMENT_DIR=deployment
+
+# Load .env from project root
+ifneq ("$(wildcard .env)","")
+	include .env
+	export $(shell sed 's/=.*//' .env | xargs)
+endif
+
+# --- Tool Check ---
+check-tools:
+	@command -v docker > /dev/null || (echo "❌ Docker is not installed"; exit 1)
+	@command -v docker compose > /dev/null || (echo "❌ Docker Compose v2+ is not installed"; exit 1)
+	@cd backend && command -v poetry > /dev/null || (echo "❌ Poetry is not installed or not in PATH"; exit 1)
+
+# --- Help ---
+.PHONY: help
+help:
+	@echo "Usage: make [target] ENV=development|staging|production"
+	@echo ""
+	@echo "Backend (Django + Poetry):"
+	@echo "  run                Run Django dev server"
+	@echo "  migrate            Run DB migrations"
+	@echo "  makemigrations     Create migrations"
+	@echo "  createsuperuser    Create admin user"
+	@echo "  shell              Launch Django shell"
+	@echo "  test               Run backend tests"
+	@echo "  lint               Lint Python files"
+	@echo "  clean              Remove __pycache__ and .pyc files"
+	@echo ""
+	@echo "Frontend (Vite + React):"
+	@echo "  frontend           Install frontend deps"
+	@echo "  vite               Start Vite dev server"
+	@echo ""
+	@echo "Docker & Infra:"
+	@echo "  up                 Start Docker services"
+	@echo "  down               Stop Docker services"
+	@echo "  build              Rebuild containers"
+	@echo "  restart            Restart containers"
+	@echo "  logs               Tail container logs"
+	@echo ""
+	@echo "Database:"
+	@echo "  db-shell           Open Postgres shell"
+	@echo "  db-status          Check database status"
+	@echo "  db-verify          Verify database setup"
+	@echo "  db-test            Test database configuration"
+	@echo "  db-reset           Reset database (WARNING: deletes data)"
+	@echo "  db-backup          Backup database"
+	@echo "  db-restore         Restore database from backup"
+	@echo "  db-postgis-check   Check PostGIS installation"
+	@echo "  db-postgis-test    Test PostGIS functionality"
+	@echo ""
+	@echo "Utilities:"
+	@echo "  backup-pgpass      Run backup-pgpass script"
+	@echo "  status             Show environment/debug info"
+	@echo "  check-tools        Check Docker and Poetry availability"
+
+# --- Backend Targets ---
+run: check-tools
+	$(MANAGE) runserver
+
+migrate: check-tools
+	$(MANAGE) migrate --settings=chariot_claims.settings.$(ENV)
+
+makemigrations: check-tools
+	$(MANAGE) makemigrations --settings=chariot_claims.settings.$(ENV)
+
+createsuperuser: check-tools
+	$(MANAGE) createsuperuser --settings=chariot_claims.settings.$(ENV)
+
+shell: check-tools
+	$(MANAGE) shell --settings=chariot_claims.settings.$(ENV)
+
+test: check-tools
+	cd backend && poetry run pytest
+
+lint: check-tools
+	cd backend && poetry run flake8 .
+
+clean:
+	find . -name '*.pyc' -delete
+	find . -name '__pycache__' -delete
+
+# --- Frontend Targets ---
+frontend:
+	cd $(FRONTEND_DIR) && npm install
+
+vite:
+	cd $(FRONTEND_DIR) && npm run dev
+
+# --- Docker Targets ---
+up: check-tools
+	docker compose --env-file .env up -d
+
+down: check-tools
+	docker compose --env-file .env down
+
+build: check-tools
+	docker compose --env-file .env build
+
+restart: check-tools
+	docker compose --env-file .env -f docker-compose.yml down
+	docker compose --env-file .env -f docker-compose.yml up -d --build
+
+logs: check-tools
+	docker compose logs -f
+
+# --- Database Management Commands ---
+db-shell:
+	docker compose exec db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)
+
+db-logs:
+	docker compose logs -f db
+
+db-reset:
+	@echo "⚠️  WARNING: This will delete all database data!"
+	@read -p "Are you sure? [y/N] " confirm && [ "$${confirm}" = "y" ] || exit 1
+	docker compose stop db
+	docker compose rm -f db
+	docker volume rm chariot-claims_postgres_data || true
+	@echo "Database volume removed. Run 'make up' to recreate."
+
+db-test:
+	@echo "Testing database setup..."
+	@echo "1. Checking schemas..."
+	@docker compose exec db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -c "\dn" || echo "Database not ready"
+	@echo ""
+	@echo "2. Checking extensions..."
+	@docker compose exec db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -c "\dx" || echo "Extensions not ready"
+	@echo ""
+	@echo "3. Checking payments schema permissions..."
+	@docker compose exec db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -c "\dp payments.*" 2>/dev/null || echo "No objects in payments schema yet"
+	@echo ""
+	@echo "4. Checking analytics schema permissions..."
+	@docker compose exec db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -c "\dp analytics.*" 2>/dev/null || echo "No objects in analytics schema yet"
+
+db-verify:
+	@echo "Verifying database setup..."
+	@docker compose exec db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -t -c "SELECT 'Current Database: ' || current_database();"
+	@docker compose exec db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -t -c "SELECT 'Current User: ' || current_user;"
+	@docker compose exec db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -t -c "SELECT 'Database Owner: ' || pg_catalog.pg_get_userbyid(d.datdba) FROM pg_catalog.pg_database d WHERE d.datname = '$(POSTGRES_DB)';"
+	@echo ""
+	@echo "Schemas:"
+	@docker compose exec db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -t -c "SELECT '  - ' || schema_name || ' (owner: ' || schema_owner || ')' FROM information_schema.schemata WHERE schema_name IN ('payments', 'analytics') ORDER BY schema_name;"
+	@echo ""
+	@echo "Extensions:"
+	@docker compose exec db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -t -c "SELECT '  - ' || extname || ' ' || extversion FROM pg_extension WHERE extname != 'plpgsql' ORDER BY extname;"
+	@echo ""
+	@echo "PostGIS Version:"
+	@docker compose exec db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -t -c "SELECT '  ' || PostGIS_version();"
+
+db-status:
+	@docker compose exec db pg_isready -U $(POSTGRES_USER) -d $(POSTGRES_DB) && echo "✅ Database is ready" || echo "❌ Database is not ready"
+
+db-stats:
+	@echo "Database statistics:"
+	@docker compose exec db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -c "SELECT schemaname, tablename, n_live_tup as rows FROM pg_stat_user_tables WHERE schemaname IN ('payments', 'analytics') ORDER BY schemaname, tablename;"
+
+# PostGIS specific commands
+db-postgis-check:
+	@echo "PostGIS diagnostics:"
+	@docker compose exec db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -c "SELECT PostGIS_full_version();"
+	@docker compose exec db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -c "SELECT name, default_version, installed_version FROM pg_available_extensions WHERE name LIKE 'postgis%' ORDER BY name;"
+
+# Create a test spatial table to verify PostGIS works
+db-postgis-test:
+	@echo "Testing PostGIS functionality..."
+	@docker compose exec db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -c "CREATE TABLE IF NOT EXISTS payments.test_locations (id SERIAL PRIMARY KEY, name TEXT, location GEOMETRY(Point, 4326));"
+	@docker compose exec db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -c "INSERT INTO payments.test_locations (name, location) VALUES ('Test Point', ST_GeomFromText('POINT(-73.935242 40.730610)', 4326)) ON CONFLICT DO NOTHING;"
+	@docker compose exec db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -c "SELECT name, ST_AsText(location) FROM payments.test_locations;"
+	@docker compose exec db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -c "DROP TABLE IF EXISTS payments.test_locations;"
+	@echo "✅ PostGIS is working correctly"
+
+# Development helper to create a database backup
+db-backup:
+	@mkdir -p ./backups
+	@docker compose exec db pg_dump -U $(POSTGRES_USER) -d $(POSTGRES_DB) -F c -f /tmp/backup.dump
+	@docker cp chariot_db:/tmp/backup.dump ./backups/chariot_claims_$$(date +%Y%m%d_%H%M%S).dump
+	@docker compose exec db rm /tmp/backup.dump
+	@echo "✅ Database backed up to ./backups/"
+
+# Restore from backup
+db-restore:
+	@read -p "Enter backup filename (from ./backups/): " filename; \
+	docker cp ./backups/$$filename chariot_db:/tmp/restore.dump && \
+	docker compose exec db pg_restore -U $(POSTGRES_USER) -d $(POSTGRES_DB) -c /tmp/restore.dump && \
+	docker compose exec db rm /tmp/restore.dump && \
+	echo "✅ Database restored from $$filename"
+
+# --- Utility Commands ---
+backup-pgpass:
+	$(DEPLOYMENT_DIR)/scripts/backup-pgpass.sh
+
+status: check-tools
+	@echo "🧠 Environment: $(ENV)"
+	@echo "🔁 Python version:" && cd backend && poetry run python --version
+	@echo "📦 Poetry packages:" && cd backend && poetry show --no-dev | wc -l
+	@echo "🐳 Docker containers:" && docker compose ps
+	@echo "💾 Postgres connection info:"
+	@echo "   Host: localhost"
+	@echo "   DB:   $(POSTGRES_DB)"
+	@echo "   User: $(POSTGRES_USER)"
+
+# Add any missing phony targets
+.PHONY: help check-tools run migrate makemigrations createsuperuser shell test lint clean
+.PHONY: frontend vite up down build restart logs
+.PHONY: db-shell db-logs db-reset db-test db-verify db-status db-stats
+.PHONY: db-postgis-check db-postgis-test db-backup db-restore
+.PHONY: backup-pgpass status

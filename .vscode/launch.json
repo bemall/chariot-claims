@@ -1,0 +1,41 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Django",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/backend/manage.py",
+      "args": [
+        "runserver",
+        "0.0.0.0:8020"
+      ],
+      "django": true,
+      "env": {
+        "DJANGO_SETTINGS_MODULE": "chariot_claims.settings.development"
+      },
+      "cwd": "${workspaceFolder}/backend"
+    },
+    {
+      "name": "Django Shell",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/backend/manage.py",
+      "args": [
+        "shell"
+      ],
+      "django": true,
+      "cwd": "${workspaceFolder}/backend"
+    },
+    {
+      "name": "Pytest",
+      "type": "python",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "-v"
+      ],
+      "cwd": "${workspaceFolder}/backend"
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+# pgpass files (contain passwords)
+pgpass/shared/.pgpass
+pgpass/shared/backup/

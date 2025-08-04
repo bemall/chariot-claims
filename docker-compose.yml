@@ -1,0 +1,152 @@
+services:
+  # PostgreSQL with PostGIS
+  db:
+    image: postgis/postgis:17-3.5
+    container_name: chariot_db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=en_US.utf8"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./deployment/docker/db/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "5442:5432"  # Custom external port 5442
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - chariot_network
+    shm_size: 256mb
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: chariot_redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6389:6379"  # Custom external port 6389
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - chariot_network
+
+  # Django Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../deployment/docker/backend/backend.Dockerfile
+    container_name: chariot_backend
+    command: poetry run python manage.py runserver 0.0.0.0:8020
+    volumes:
+      - ./backend:/app
+      - poetry_cache:/root/.cache/pypoetry
+    ports:
+      - "8020:8020"  # Custom port 8020
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - chariot_network
+
+  # Celery Worker
+  celery-worker:
+    build:
+      context: ./backend
+      dockerfile: ../deployment/docker/celery/celery.Dockerfile
+    container_name: chariot_celery_worker
+    command: poetry run celery -A chariot_claims worker -l info
+    volumes:
+      - ./backend:/app
+      - poetry_cache:/root/.cache/pypoetry
+    env_file:
+      - .env
+    depends_on:
+      - backend
+      - redis
+    networks:
+      - chariot_network
+
+  # Celery Beat
+  celery-beat:
+    build:
+      context: ./backend
+      dockerfile: ../deployment/docker/celery/celery.Dockerfile
+    container_name: chariot_celery_beat
+    command: poetry run celery -A chariot_claims beat -l info
+    volumes:
+      - ./backend:/app
+      - poetry_cache:/root/.cache/pypoetry
+    env_file:
+      - .env
+    depends_on:
+      - backend
+      - redis
+    networks:
+      - chariot_network
+
+  # Next.js Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../deployment/docker/frontend/frontend.Dockerfile
+    container_name: chariot_frontend
+    # Remove volume mounts that are causing module resolution issues
+    ports:
+      - "3010:3000"  # Custom external port 3010
+    env_file:
+      - .env
+    depends_on:
+      - backend
+    networks:
+      - chariot_network
+
+  # pgAdmin4
+  pgadmin:
+    image: dpage/pgadmin4:8.14
+    container_name: chariot_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./pgpass/shared/.pgpass:/tmp/.pgpass:ro
+      - ./deployment/docker/pgadmin/servers.json:/pgadmin4/servers.json:ro
+    ports:
+      - "5960:80"  # Custom external port 5960
+    depends_on:
+      - db
+    networks:
+      - chariot_network
+    entrypoint:
+      - "/bin/sh"
+      - "-c"
+      - |
+        cp /tmp/.pgpass /var/lib/pgadmin/.pgpass
+        chmod 600 /var/lib/pgadmin/.pgpass
+        chown pgadmin:pgadmin /var/lib/pgadmin/.pgpass
+        /entrypoint.sh
+
+volumes:
+  postgres_data:
+  redis_data:
+  pgadmin_data:
+  poetry_cache:
+
+networks:
+  chariot_network:
+    driver: bridge

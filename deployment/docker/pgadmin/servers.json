@@ -1,0 +1,17 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Chariot Claims DB",
+      "Group": "Servers",
+      "Host": "db",
+      "Port": 5432,
+      "MaintenanceDB": "chariot_claims",
+      "Username": "chariot",
+      "PassFile": "/var/lib/pgadmin/.pgpass",
+      "SSLMode": "prefer",
+      "UseSSHTunnel": 0,
+      "TunnelPort": "22",
+      "TunnelAuthentication": 0
+    }
+  }
+}

@@ -1,0 +1,36 @@
+import { Payment } from './api';
+
+export const mockPayments: Payment[] = [
+  {
+    id: 'txn_001',
+    amount: 5000.00,
+    currency: 'USD',
+    scheduled_date: '2025-08-03',
+    recipient: 'John Doe',
+    status: 'pending',
+    description: 'Monthly subscription payment',
+    is_due_soon: true,
+    created_at: '2025-08-01T10:00:00Z',
+    updated_at: '2025-08-01T10:00:00Z'
+  },
+  {
+    id: 'txn_002',
+    amount: 2500.50,
+    currency: 'USD',
+    scheduled_date: '2025-08-15',
+    recipient: 'Jane Smith',
+    status: 'pending',
+    description: 'Consulting services',
+    is_due_soon: false,
+    created_at: '2025-08-01T10:00:00Z',
+    updated_at: '2025-08-01T10:00:00Z'
+  },
+  // Add more mock data...
+];
+
+export const mockSummary = {
+  total_amount: 7500.50,
+  payment_count: 2,
+  filters_applied: {},
+  currency_breakdown: { USD: 7500.50 }
+};

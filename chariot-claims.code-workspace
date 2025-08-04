@@ -1,0 +1,262 @@
+{
+  "folders": [
+    {
+      "name": "🏠 Project Root",
+      "path": "."
+    },
+    {
+      "name": "🐍 Backend (Django)",
+      "path": "backend"
+    },
+    {
+      "name": "⚛️ Frontend (Next.js)",
+      "path": "frontend"
+    },
+    {
+      "name": "🏗️ Infrastructure",
+      "path": "infrastructure"
+    },
+    {
+      "name": "🐳 Deployment",
+      "path": "deployment"
+    }
+  ],
+  "settings": {
+    "python.defaultInterpreterPath": "${workspaceFolder:🐍 Backend (Django)}/.venv/bin/python",
+    "python.terminal.activateEnvironment": true,
+    "python.linting.enabled": true,
+    "python.linting.flake8Enabled": true,
+    "python.formatting.provider": "black",
+    "python.testing.pytestEnabled": true,
+    "python.testing.pytestArgs": [
+      "${workspaceFolder:🐍 Backend (Django)}/tests"
+    ],
+    "[python]": {
+      "editor.formatOnSave": true,
+      "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit"
+      }
+    },
+    "[javascript]": {
+      "editor.formatOnSave": true
+    },
+    "[typescript]": {
+      "editor.formatOnSave": true
+    },
+    "[typescriptreact]": {
+      "editor.formatOnSave": true
+    },
+    "files.associations": {
+      "**/*.html": "django-html",
+      "**/templates/**/*.html": "django-html",
+      "**/templates/**/*": "django-txt",
+      "**/requirements{/**,*}.{txt,in}": "pip-requirements",
+      "Dockerfile*": "dockerfile",
+      "docker-compose*.yml": "dockercompose"
+    },
+    "emmet.includeLanguages": {
+      "django-html": "html"
+    },
+    "files.exclude": {
+      "**/__pycache__": true,
+      "**/*.pyc": true,
+      "**/node_modules": false,
+      "**/.next": true,
+      "**/staticfiles": true,
+      "**/.pytest_cache": true,
+      "**/.coverage": true,
+      "**/htmlcov": true
+    },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/.next": true,
+      "**/staticfiles": true,
+      "**/__pycache__": true,
+      "**/poetry.lock": true,
+      "**/package-lock.json": true
+    },
+    "editor.rulers": [88, 120],
+    "terminal.integrated.env.osx": {
+      "PYTHONPATH": "${workspaceFolder:🐍 Backend (Django)}"
+    },
+    "terminal.integrated.env.linux": {
+      "PYTHONPATH": "${workspaceFolder:🐍 Backend (Django)}"
+    },
+    "terminal.integrated.env.windows": {
+      "PYTHONPATH": "${workspaceFolder:🐍 Backend (Django)}"
+    }
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Django: Run Server",
+        "type": "python",
+        "request": "launch",
+        "program": "${workspaceFolder:🐍 Backend (Django)}/manage.py",
+        "args": ["runserver", "0.0.0.0:8020"],
+        "django": true,
+        "justMyCode": false,
+        "env": {
+          "DJANGO_SETTINGS_MODULE": "chariot_claims.settings.development",
+          "PYTHONPATH": "${workspaceFolder:🐍 Backend (Django)}"
+        },
+        "cwd": "${workspaceFolder:🐍 Backend (Django)}"
+      },
+      {
+        "name": "Django: Shell",
+        "type": "python",
+        "request": "launch",
+        "program": "${workspaceFolder:🐍 Backend (Django)}/manage.py",
+        "args": ["shell"],
+        "django": true,
+        "cwd": "${workspaceFolder:🐍 Backend (Django)}"
+      },
+      {
+        "name": "Django: Migrate",
+        "type": "python",
+        "request": "launch",
+        "program": "${workspaceFolder:🐍 Backend (Django)}/manage.py",
+        "args": ["migrate"],
+        "django": true,
+        "cwd": "${workspaceFolder:🐍 Backend (Django)}"
+      },
+      {
+        "name": "Django: Test",
+        "type": "python",
+        "request": "launch",
+        "module": "pytest",
+        "args": ["-v", "-s"],
+        "cwd": "${workspaceFolder:🐍 Backend (Django)}"
+      },
+      {
+        "name": "Next.js: Dev",
+        "type": "node",
+        "request": "launch",
+        "runtimeExecutable": "npm",
+        "runtimeArgs": ["run", "dev"],
+        "cwd": "${workspaceFolder:⚛️ Frontend (Next.js)}",
+        "serverReadyAction": {
+          "pattern": "ready on",
+          "uriFormat": "http://localhost:3010",
+          "action": "openExternally"
+        }
+      },
+      {
+        "name": "Docker: Attach to Backend",
+        "type": "python",
+        "request": "attach",
+        "connect": {
+          "host": "localhost",
+          "port": 5678
+        },
+        "pathMappings": [
+          {
+            "localRoot": "${workspaceFolder:🐍 Backend (Django)}",
+            "remoteRoot": "/app"
+          }
+        ]
+      }
+    ],
+    "compounds": [
+      {
+        "name": "Full Stack",
+        "configurations": ["Django: Run Server", "Next.js: Dev"],
+        "stopAll": true
+      }
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Docker: Up",
+        "type": "shell",
+        "command": "docker-compose up -d",
+        "problemMatcher": [],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        }
+      },
+      {
+        "label": "Docker: Down",
+        "type": "shell",
+        "command": "docker-compose down",
+        "problemMatcher": []
+      },
+      {
+        "label": "Docker: Rebuild Backend",
+        "type": "shell",
+        "command": "docker-compose build backend && docker-compose up -d backend",
+        "problemMatcher": []
+      },
+      {
+        "label": "Django: Makemigrations",
+        "type": "shell",
+        "command": "cd backend && poetry run python manage.py makemigrations",
+        "problemMatcher": []
+      },
+      {
+        "label": "Django: Migrate",
+        "type": "shell",
+        "command": "cd backend && poetry run python manage.py migrate",
+        "problemMatcher": []
+      },
+      {
+        "label": "Backend: Install Dependencies",
+        "type": "shell",
+        "command": "cd backend && poetry install",
+        "problemMatcher": []
+      },
+      {
+        "label": "Frontend: Install Dependencies",
+        "type": "shell",
+        "command": "cd frontend && npm install",
+        "problemMatcher": []
+      },
+      {
+        "label": "Backend: Test",
+        "type": "shell",
+        "command": "cd backend && poetry run pytest -v",
+        "problemMatcher": []
+      },
+      {
+        "label": "Frontend: Test",
+        "type": "shell",
+        "command": "cd frontend && npm test",
+        "problemMatcher": []
+      },
+      {
+        "label": "View Logs: Backend",
+        "type": "shell",
+        "command": "docker-compose logs -f backend",
+        "problemMatcher": [],
+        "isBackground": true
+      },
+      {
+        "label": "View Logs: All",
+        "type": "shell",
+        "command": "docker-compose logs -f",
+        "problemMatcher": [],
+        "isBackground": true
+      }
+    ]
+  },
+  "extensions": {
+    "recommendations": [
+      "ms-python.python",
+      "ms-python.vscode-pylance",
+      "ms-python.black-formatter",
+      "batisteo.vscode-django",
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode",
+      "ms-azuretools.vscode-docker",
+      "mikestead.dotenv",
+      "oderwat.indent-rainbow",
+      "eamodio.gitlens",
+      "github.vscode-pull-request-github",
+      "redhat.vscode-yaml"
+    ]
+  }
+}
