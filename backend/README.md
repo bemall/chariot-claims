@@ -167,9 +167,16 @@ npm test```
 ## 📊 API Documentation
 Interactive Documentation
 
-Swagger UI: http://localhost:8000/api/docs/
-ReDoc: http://localhost:8000/api/redoc/
-OpenAPI Schema: http://localhost:8000/api/schema/
+Swagger UI: http://localhost:8020/api/docs/
+ReDoc: http://localhost:8020/api/redoc/
+OpenAPI Schema: http://localhost:8020/api/schema/
+Backend API: http://localhost:8020/api/
+API Documentation: http://localhost:8020/api/docs/
+Django Admin: http://localhost:8020/admin/
+pgAdmin4 http://localhost:5960
+PostgreSQL Port : 5442
+Frontend Application: http://localhost:3010
+Redis redis://redis:6379/0
 
 Key Endpoints
 Payments API
