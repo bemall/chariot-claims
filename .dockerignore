@@ -1,17 +1,19 @@
-# Django / Python
+# Version control
+.git/
+.gitignore
+.github/
+
+# Python / Django
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
-.env
 .env.local
-.venv
-env/
+.venv/
 venv/
+env/
 ENV/
-env.bak/
-venv.bak/
 *.log
 local_settings.py
 db.sqlite3
@@ -23,18 +25,6 @@ htmlcov/
 .pytest_cache/
 coverage.xml
 *.cover
-.hypothesis/
-.tox/
-.nox/
-.eggs/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# Poetry
-poetry.lock
-dist/
-build/
 
 # Next.js / Node.js
 node_modules/
@@ -50,20 +40,9 @@ yarn-error.log*
 .vercel
 .turbo
 
-# TailwindCSS
-.tailwind/
-
 # Docker
 .docker/
 docker-compose.override.yml
-
-# Redis
-*.rdb
-dump.rdb
-
-# Celery
-celerybeat-schedule
-celerybeat.pid
 
 # IDE / Editors
 .idea/
@@ -72,18 +51,20 @@ celerybeat.pid
 *.swo
 *~
 .DS_Store
+
+# Local environment files
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-# pgpass files (contain passwords)
-pgpass/shared/.pgpass
-pgpass/shared/backup/
-
 # Logs
 logs/
 *.log
+
+# Documentation
+docs/
+*.md
 
 # Misc
 .DS_Store

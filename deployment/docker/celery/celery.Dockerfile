@@ -38,4 +38,10 @@ RUN poetry config virtualenvs.create false \
 # Copy application code
 COPY . .
 
+# Copy entrypoint script
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Set entrypoint and default command
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["poetry", "run", "celery", "-A", "chariot_claims", "worker", "-l", "info"]

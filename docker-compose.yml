@@ -45,6 +45,7 @@ services:
       context: ./backend
       dockerfile: ../deployment/docker/backend/backend.Dockerfile
     container_name: chariot_backend
+
     command: poetry run python manage.py runserver 0.0.0.0:8020
     volumes:
       - ./backend:/app
@@ -67,6 +68,7 @@ services:
       context: ./backend
       dockerfile: ../deployment/docker/celery/celery.Dockerfile
     container_name: chariot_celery_worker
+
     command: poetry run celery -A chariot_claims worker -l info
     volumes:
       - ./backend:/app
@@ -85,6 +87,7 @@ services:
       context: ./backend
       dockerfile: ../deployment/docker/celery/celery.Dockerfile
     container_name: chariot_celery_beat
+
     command: poetry run celery -A chariot_claims beat -l info
     volumes:
       - ./backend:/app

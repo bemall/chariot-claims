@@ -27,18 +27,23 @@ WORKDIR /app
 COPY pyproject.toml poetry.lock ./
 
 # Configure poetry - IMPORTANT: In Poetry 2.x, use in-project virtualenv
-RUN poetry config virtualenvs.in-project true
+RUN poetry config virtualenvs.in-project false
 
 # Install dependencies with Poetry 2.x
-RUN poetry install --no-interaction --no-ansi
+RUN poetry install --no-interaction --no-ansi --no-root
 
 # Copy application
 COPY . .
+
+# Copy entrypoint script
+COPY ./entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # Create required directories
 RUN mkdir -p static media staticfiles
 
 EXPOSE 8020
 
-# Use the virtual environment Python
-CMD ["/app/.venv/bin/python", "manage.py", "runserver", "0.0.0.0:8020"]
+# Set entrypoint and default command
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["poetry", "run", "python", "manage.py", "runserver", "0.0.0.0:8020"]

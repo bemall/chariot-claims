@@ -14,10 +14,12 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+import os
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import JsonResponse
 from rest_framework.routers import DefaultRouter
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 from apps.payments.views import PaymentViewSet
@@ -26,8 +28,29 @@ from apps.payments.views import PaymentViewSet
 router = DefaultRouter()
 router.register(r'payments', PaymentViewSet)
 
+# Root view for status check
+def root_status_view(request):
+    # Get environment from settings or use a default value
+    environment = getattr(settings, 'ENVIRONMENT', os.environ.get('ENVIRONMENT', 'development'))
+    
+    return JsonResponse({
+        'status': 'ok',
+        'service': 'Chariot Claims API',
+        'version': '1.0.0',
+        'environment': environment,
+        'endpoints': {
+            'admin': '/admin/',
+            'api': '/api/',
+            'docs': '/api/docs/',
+            'health': '/api/health/'
+        }
+    })
+
 # URL patterns
 urlpatterns = [
+    # Root status endpoint
+    path('', root_status_view, name='api-root'),
+    
     # Admin
     path('admin/', admin.site.urls),
     
