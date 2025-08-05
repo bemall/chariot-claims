@@ -106,7 +106,8 @@ export const mockPayments = [
     payment_method: 'direct_deposit',
     description: 'Auto claim partial payment',
     scheduled_date: '2025-07-18',
-    is_due_soon: false
+    is_due_soon: false,
+    claim_type: 'Auto Insurance'
   },
   {
     id: '8',
@@ -136,7 +137,8 @@ export const mockPayments = [
     payment_method: 'check',
     description: 'Personal item claim',
     scheduled_date: '2025-07-24',
-    is_due_soon: true
+    is_due_soon: true,
+    claim_type: 'Personal Property'
   },
   {
     id: '10',
@@ -151,7 +153,8 @@ export const mockPayments = [
     payment_method: 'direct_deposit',
     description: 'Vehicle damage claim',
     scheduled_date: '2025-07-25',
-    is_due_soon: true
+    is_due_soon: true,
+    claim_type: 'Auto Insurance'
   },
   {
     id: '11',
@@ -166,7 +169,8 @@ export const mockPayments = [
     payment_method: 'direct_deposit',
     description: 'Medical claim payment',
     scheduled_date: '2025-07-23',
-    is_due_soon: false
+    is_due_soon: false,
+    claim_type: 'Health Insurance'
   },
   {
     id: '12',
@@ -181,7 +185,8 @@ export const mockPayments = [
     payment_method: 'check',
     description: 'Travel insurance claim',
     scheduled_date: '2025-07-27',
-    is_due_soon: true
+    is_due_soon: true,
+    claim_type: 'Travel Insurance'
   },
   {
     id: '13',
@@ -211,7 +216,8 @@ export const mockPayments = [
     payment_method: 'direct_deposit',
     description: 'Auto repair claim',
     scheduled_date: '2025-07-19',
-    is_due_soon: true
+    is_due_soon: true,
+    claim_type: 'Auto Insurance'
   },
   {
     id: '15',
@@ -226,7 +232,8 @@ export const mockPayments = [
     payment_method: 'direct_deposit',
     description: 'Personal item claim',
     scheduled_date: '2025-07-17',
-    is_due_soon: false
+    is_due_soon: false,
+    claim_type: 'Personal Property'
   },
   {
     id: '16',
@@ -241,7 +248,8 @@ export const mockPayments = [
     payment_method: 'direct_deposit',
     description: 'Home insurance claim',
     scheduled_date: '2025-07-18',
-    is_due_soon: false
+    is_due_soon: false,
+    claim_type: 'Property Damage'
   },
   {
     id: '17',
@@ -256,7 +264,8 @@ export const mockPayments = [
     payment_method: 'check',
     description: 'Travel insurance claim',
     scheduled_date: '2025-07-22',
-    is_due_soon: true
+    is_due_soon: true,
+    claim_type: 'Travel Insurance'
   },
   {
     id: '18',
@@ -271,7 +280,8 @@ export const mockPayments = [
     payment_method: 'direct_deposit',
     description: 'Property damage claim',
     scheduled_date: '2025-07-20',
-    is_due_soon: false
+    is_due_soon: false,
+    claim_type: 'Property Damage'
   },
   {
     id: '19',
@@ -286,7 +296,8 @@ export const mockPayments = [
     payment_method: 'direct_deposit',
     description: 'Auto claim payment',
     scheduled_date: '2025-07-24',
-    is_due_soon: true
+    is_due_soon: true,
+    claim_type: 'Auto Insurance'
   },
   {
     id: '20',
@@ -301,7 +312,8 @@ export const mockPayments = [
     payment_method: 'direct_deposit',
     description: 'Medical expenses claim',
     scheduled_date: '2025-07-22',
-    is_due_soon: false
+    is_due_soon: false,
+    claim_type: 'Health Insurance'
   },
   {
     id: '21',
@@ -316,7 +328,8 @@ export const mockPayments = [
     payment_method: 'check',
     description: 'Property insurance claim',
     scheduled_date: '2025-07-26',
-    is_due_soon: true
+    is_due_soon: true,
+    claim_type: 'Property Damage'
   },
   {
     id: '22',
@@ -331,7 +344,8 @@ export const mockPayments = [
     payment_method: 'direct_deposit',
     description: 'Auto damage claim',
     scheduled_date: '2025-07-24',
-    is_due_soon: false
+    is_due_soon: false,
+    claim_type: 'Auto Insurance'
   },
   {
     id: '23',
@@ -346,7 +360,8 @@ export const mockPayments = [
     payment_method: 'direct_deposit',
     description: 'Travel insurance claim',
     scheduled_date: '2025-07-28',
-    is_due_soon: true
+    is_due_soon: true,
+    claim_type: 'Travel Insurance'
   },
   {
     id: '24',
@@ -376,7 +391,8 @@ export const mockPayments = [
     payment_method: 'direct_deposit',
     description: 'Auto repair claim',
     scheduled_date: '2025-07-16',
-    is_due_soon: false
+    is_due_soon: false,
+    claim_type: 'Auto Insurance'
   },
   {
     id: '26',
