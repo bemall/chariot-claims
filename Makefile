@@ -127,8 +127,8 @@ collectstatic:
 	@echo "$(GREEN)✓ Static files collected$(NC)"
 
 loaddata:
-	@echo "$(YELLOW)Loading sample data...$(NC)"
-	$(DOCKER_COMPOSE) exec $(BACKEND_CONTAINER) poetry run python manage.py load_sample_payments
+	@echo "$(YELLOW)Generating sample payment data...$(NC)"
+	$(DOCKER_COMPOSE) exec $(BACKEND_CONTAINER) poetry run python manage.py generate_payments --count 1000
 	@echo "$(GREEN)✓ Sample data loaded$(NC)"
 
 # --- Frontend Targets ---
@@ -189,7 +189,13 @@ logs: check-tools
 	$(DOCKER_COMPOSE) logs -f
 
 # Development shortcuts
-dev: build up logs
+dev: check-tools build up migrate collectstatic loaddata
+	@echo "$(GREEN)Development environment is ready!$(NC)"
+	@echo "$(BLUE)Backend: http://localhost:8020$(NC)"
+	@echo "$(BLUE)Frontend: http://localhost:3000$(NC)"
+	@echo "$(BLUE)pgAdmin: http://localhost:5050$(NC)"
+	@echo "$(YELLOW)Waiting for services to fully start...$(NC)"
+	@sleep 5
 
 # Check service health
 health:
@@ -324,8 +330,18 @@ install:
 
 # Production build
 prod-build:
+	@echo "$(YELLOW)Building production images...$(NC)"
 	docker build -f deployment/docker/backend/backend.Dockerfile -t chariot-backend:latest backend/
 	docker build -f deployment/docker/frontend/frontend.Dockerfile -t chariot-frontend:latest frontend/
+	@echo "$(GREEN)✓ Production images built$(NC)"
+
+# Production deploy with safety confirmation
+prod-deploy: prod-build
+	@echo "$(YELLOW)Deploying to production...$(NC)"
+	@echo "$(RED)Warning: This will deploy to production environment$(NC)"
+	@read -p "Are you sure? (y/N): " confirm && [ "$$confirm" = "y" ] || exit 1
+	ENV=production $(DOCKER_COMPOSE) -f docker-compose.yml -f docker-compose.prod.yml up -d
+	@echo "$(GREEN)✓ Production deployment complete$(NC)"
 
 # Add all phony targets
 .PHONY: help check-tools run migrate makemigrations createsuperuser shell test test-backend lint clean

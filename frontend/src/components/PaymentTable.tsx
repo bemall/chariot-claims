@@ -3,7 +3,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { PaymentResponse } from '@/lib/types';
 import { PaymentSummary, paymentAPI } from '@/lib/api';
-import { formatCurrency, formatDate, classNames, isWithinSevenDays } from '@/lib/utils';
+import { formatCurrency, formatDate, classNames, isWithin24Hours } from '@/lib/utils';
 import PaymentFilterComponent from './PaymentFilters';
 import LoadingSpinner from './LoadingSpinner';
 import { useFilterState } from '@/hooks/useFilterState';
@@ -218,7 +218,7 @@ export default function PaymentTable({
                           <span suppressHydrationWarning className="font-medium">
                             {formatDate(payment.scheduled_date)}
                           </span>
-                          {isWithinSevenDays(payment.scheduled_date) && (
+                          {isWithin24Hours(payment.scheduled_date) && (
                             <span className="text-xs font-medium text-amber-600 mt-1 flex items-center">
                               <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />

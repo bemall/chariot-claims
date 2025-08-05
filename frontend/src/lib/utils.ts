@@ -55,10 +55,14 @@ export function formatDate(dateString: string): string {
 }
 
 export function isWithin24Hours(dateString: string): boolean {
+  // Use UTC date methods to ensure consistent rendering between server and client
   const paymentDate = new Date(dateString);
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  return paymentDate <= tomorrow;
+  const twentyFourHoursFromNow = new Date();
+  twentyFourHoursFromNow.setHours(twentyFourHoursFromNow.getHours() + 24);
+  const now = new Date();
+  
+  // Compare using UTC timestamps to avoid timezone issues
+  return paymentDate.getTime() <= twentyFourHoursFromNow.getTime() && paymentDate.getTime() >= now.getTime();
 }
 
 export function isWithinSevenDays(dateString: string): boolean {

@@ -1,0 +1,42 @@
+{
+  "name": "chariot-claims-infrastructure",
+  "version": "1.0.0",
+  "description": "AWS CDK infrastructure for Chariot Claims application",
+  "main": "bin/app.js",
+  "directories": {
+    "lib": "lib",
+    "bin": "bin"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "jest",
+    "cdk": "cdk",
+    "synth": "cdk synth",
+    "deploy": "cdk deploy",
+    "diff": "cdk diff",
+    "destroy": "cdk destroy",
+    "bootstrap": "cdk bootstrap",
+    "deploy:dev": "cdk deploy --context environment=development",
+    "deploy:staging": "cdk deploy --context environment=staging",
+    "deploy:prod": "cdk deploy --context environment=production"
+  },
+  "keywords": [
+    "aws",
+    "cdk",
+    "infrastructure",
+    "chariot-claims"
+  ],
+  "author": "Chariot Claims Team",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "aws-cdk-lib": "^2.208.0",
+    "constructs": "^10.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.2.0",
+    "aws-cdk": "^2.1023.0",
+    "typescript": "^5.9.2"
+  }
+}
