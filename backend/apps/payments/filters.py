@@ -9,6 +9,8 @@ class PaymentFilter(django_filters.FilterSet):
     amount__gte = django_filters.NumberFilter(field_name='amount', lookup_expr='gte')
     amount__lte = django_filters.NumberFilter(field_name='amount', lookup_expr='lte')
     
+    claim_type = django_filters.ChoiceFilter(choices=Payment.CLAIM_TYPE_CHOICES)
+    
     class Meta:
         model = Payment
-        fields = ['status', 'currency']
+        fields = ['status', 'currency', 'claim_type']

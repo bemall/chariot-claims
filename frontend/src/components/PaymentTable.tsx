@@ -3,7 +3,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { PaymentResponse } from '@/lib/types';
 import { PaymentSummary, paymentAPI } from '@/lib/api';
-import { formatCurrency, formatDate, classNames, isWithinTwoWeeks } from '@/lib/utils';
+import { formatCurrency, formatDate, classNames, isWithinSevenDays } from '@/lib/utils';
 import PaymentFilterComponent from './PaymentFilters';
 import LoadingSpinner from './LoadingSpinner';
 import { useFilterState } from '@/hooks/useFilterState';
@@ -51,7 +51,12 @@ export default function PaymentTable({
   
   // Calculate accurate total amount from actual payment data
   const calculatedTotalAmount = paymentsData?.results?.reduce(
-    (sum, payment) => sum + payment.amount, 
+    (sum, payment) => {
+      // Ensure amount is a valid number before adding
+      const amount = typeof payment.amount === 'number' ? payment.amount : 
+                    (typeof payment.amount === 'string' ? parseFloat(payment.amount) : 0);
+      return sum + (isNaN(amount) ? 0 : amount);
+    }, 
     0
   ) || 0;
   
@@ -70,8 +75,10 @@ export default function PaymentTable({
   
   // Extract data for rendering
   const payments = paymentsData?.results || [];
-  // Use calculated total amount for accuracy
-  const totalAmount = calculatedTotalAmount;
+  // Use calculated total amount for accuracy and ensure it's a valid number
+  const totalAmount = isNaN(calculatedTotalAmount) ? 0 : calculatedTotalAmount;
+  // Get the actual payment count from the API response or fallback to array length
+  const paymentCount = paymentsData?.count || payments.length || 0;
   
   // Status color mapping helper
   const getStatusColor = (status: string) => {
@@ -91,7 +98,7 @@ export default function PaymentTable({
         <div>
           <h2 className="text-2xl font-semibold text-gray-800">Payment Dashboard</h2>
           <p className="text-sm text-gray-500 mt-1">
-            {payments.length} payment{payments.length !== 1 ? 's' : ''} found
+            {paymentCount} payment{paymentCount !== 1 ? 's' : ''} found
           </p>
         </div>
         <button 
@@ -121,21 +128,25 @@ export default function PaymentTable({
             {formatCurrency(totalAmount, 'USD')}
           </p>
           <p className="text-xs text-blue-500 mt-2">
-            Average: {formatCurrency(payments.length ? totalAmount / payments.length : 0, 'USD')}
+            Average: {formatCurrency(paymentCount > 0 ? totalAmount / paymentCount : 0, 'USD')}
           </p>
         </div>
         
         <div className="card bg-green-50 border-green-200 hover:shadow-md transition-shadow duration-300">
           <h3 className="text-lg font-semibold text-green-900">Payment Status</h3>
           <div className="flex flex-wrap gap-2 mt-2">
-            {Object.entries(summaryData?.status_counts || {}).map(([status, count]) => (
-              <div key={status} className="flex items-center">
-                <span className={`w-3 h-3 rounded-full mr-1 ${getStatusColor(status).replace('text-', 'bg-')}`}></span>
-                <span className="text-sm">
-                  {status}: <span className="font-semibold">{count}</span>
-                </span>
-              </div>
-            ))}
+            {Object.entries(summaryData?.status_counts || {}).length > 0 ? (
+              Object.entries(summaryData?.status_counts || {}).map(([status, count]) => (
+                <div key={status} className="flex items-center">
+                  <span className={`w-3 h-3 rounded-full mr-1 ${getStatusColor(status).replace('text-', 'bg-')}`}></span>
+                  <span className="text-sm">
+                    {status}: <span className="font-semibold">{count}</span>
+                  </span>
+                </div>
+              ))
+            ) : (
+              <div className="text-sm text-gray-500">No payment status data available</div>
+            )}
           </div>
         </div>
         
@@ -178,6 +189,9 @@ export default function PaymentTable({
                   Claim Type
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Description
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -185,7 +199,7 @@ export default function PaymentTable({
             <tbody className="bg-white divide-y divide-gray-200">
               {isLoading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center">
+                  <td colSpan={7} className="px-6 py-4 text-center">
                     <LoadingSpinner />
                   </td>
                 </tr>
@@ -193,24 +207,26 @@ export default function PaymentTable({
                 payments.map((payment) => (
                   <tr key={payment.id} className="hover:bg-gray-50 transition-colors duration-150">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {payment.recipient_name}
+                      {payment.recipient || 'No recipient'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {formatCurrency(payment.amount, payment.currency)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div className="flex flex-col">
-                        <span suppressHydrationWarning>
-                          {typeof window === 'undefined' ? '' : formatDate(payment.scheduled_date)}
-                        </span>
-                        {isWithinTwoWeeks(payment.scheduled_date) && (
-                          <span className="text-xs font-medium text-amber-600 mt-1 flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            Due soon
+                        <>
+                          <span suppressHydrationWarning className="font-medium">
+                            {formatDate(payment.scheduled_date)}
                           </span>
-                        )}
+                          {isWithinSevenDays(payment.scheduled_date) && (
+                            <span className="text-xs font-medium text-amber-600 mt-1 flex items-center">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              Due soon
+                            </span>
+                          )}
+                        </>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -230,6 +246,13 @@ export default function PaymentTable({
                         <span className="text-gray-400 italic">Not specified</span>
                       )}
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {payment.description ? (
+                        <span className="line-clamp-2">{payment.description}</span>
+                      ) : (
+                        <span className="text-gray-400 italic">No description</span>
+                      )}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <button className="text-chariot-blue hover:text-chariot-blue-dark mr-2">
                         View
@@ -242,7 +265,7 @@ export default function PaymentTable({
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
+                  <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
                     No payments found
                   </td>
                 </tr>

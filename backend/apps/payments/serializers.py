@@ -9,7 +9,7 @@ class PaymentSerializer(serializers.ModelSerializer):
         model = Payment
         fields = [
             'id', 'amount', 'currency', 'scheduled_date', 
-            'recipient', 'status', 'description', 'metadata',
+            'recipient', 'status', 'claim_type', 'description', 'metadata',
             'is_due_soon', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'is_due_soon']
@@ -24,3 +24,5 @@ class PaymentSummarySerializer(serializers.Serializer):
     payment_count = serializers.IntegerField()
     filters_applied = serializers.DictField()
     currency_breakdown = serializers.DictField()
+    status_counts = serializers.DictField()
+    claim_type_breakdown = serializers.DictField()

@@ -32,6 +32,7 @@ dependencies = [
     "pillow>=10.2.0",
     "gunicorn>=21.2.0",
     "whitenoise>=6.6.0",
+    "factory-boy (>=3.3.3,<4.0.0)",
 ]
 
 [project.optional-dependencies]

@@ -61,15 +61,20 @@ export function isWithin24Hours(dateString: string): boolean {
   return paymentDate <= tomorrow;
 }
 
-export function isWithinTwoWeeks(dateString: string): boolean {
+export function isWithinSevenDays(dateString: string): boolean {
   // Use UTC date methods to ensure consistent rendering between server and client
   const paymentDate = new Date(dateString);
-  const twoWeeksFromNow = new Date();
-  twoWeeksFromNow.setDate(twoWeeksFromNow.getDate() + 14);
+  const sevenDaysFromNow = new Date();
+  sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
   const now = new Date();
   
   // Compare using UTC timestamps to avoid timezone issues
-  return paymentDate.getTime() <= twoWeeksFromNow.getTime() && paymentDate.getTime() >= now.getTime();
+  return paymentDate.getTime() <= sevenDaysFromNow.getTime() && paymentDate.getTime() >= now.getTime();
+}
+
+// Keep the old function for backward compatibility but make it use the new 7-day logic
+export function isWithinTwoWeeks(dateString: string): boolean {
+  return isWithinSevenDays(dateString);
 }
 
 export function classNames(...classes: (string | boolean | undefined)[]): string {

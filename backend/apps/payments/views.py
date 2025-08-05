@@ -49,11 +49,25 @@ class PaymentViewSet(viewsets.ModelViewSet):
             payment_count=Count('id')
         )
         
+        # Calculate status counts
+        status_counts = {}
+        for status, _ in Payment.STATUS_CHOICES:
+            count = queryset.filter(status=status).count()
+            status_counts[status] = count
+            
+        # Calculate claim type breakdown
+        claim_type_breakdown = {}
+        for claim_type, _ in Payment.CLAIM_TYPE_CHOICES:
+            amount = queryset.filter(claim_type=claim_type).aggregate(total=Sum('amount'))['total'] or 0
+            claim_type_breakdown[claim_type] = float(amount)
+        
         summary_data = {
-            'total_amount': total['total_amount'] or 0,
+            'total_amount': float(total['total_amount'] or 0),
             'payment_count': total['payment_count'] or 0,
             'filters_applied': request.query_params.dict(),
-            'currency_breakdown': currency_breakdown
+            'currency_breakdown': currency_breakdown,
+            'status_counts': status_counts,
+            'claim_type_breakdown': claim_type_breakdown
         }
         
         serializer = PaymentSummarySerializer(summary_data)

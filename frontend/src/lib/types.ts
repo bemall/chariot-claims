@@ -25,7 +25,7 @@ export interface Payment {
   payment_method?: string;
   description?: string;
   is_due_soon?: boolean;
-  claim_type?: string;
+  claim_type: string;
 }
 
 /**

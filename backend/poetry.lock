@@ -1775,4 +1775,4 @@ dev = ["black", "django-stubs", "factory-boy", "flake8", "ipython", "isort", "my
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<4"
-content-hash = "ac4879c5154173d966e46ee4446d14a5d9ead00dd17718f5bcd95352d0347258"
+content-hash = "506943649fd4e5d97f5fcf53a94135cbff8e87c9a8edf12b55b9c03198dcb4ab"

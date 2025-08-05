@@ -122,13 +122,12 @@ export default function PaymentFilters({
           >
             <option value="">All Claim Types</option>
             <option value="Auto Insurance">Auto Insurance</option>
+            <option value="Home Insurance">Home Insurance</option>
             <option value="Health Insurance">Health Insurance</option>
-            <option value="Property Damage">Property Damage</option>
-            <option value="Personal Property">Personal Property</option>
+            <option value="Life Insurance">Life Insurance</option>
             <option value="Travel Insurance">Travel Insurance</option>
-            <option value="Rent Gouging">Rent Gouging</option>
-            <option value="For Sale">For Sale</option>
-            <option value="Supplements">Supplements</option>
+            <option value="Business Insurance">Business Insurance</option>
+            <option value="Other">Other</option>
           </select>
         </div>
       </div>
